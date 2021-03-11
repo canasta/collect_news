@@ -1,4 +1,5 @@
 import numpy as np
+from collections import Counter
 # from gluonnlp.data import SentencepieceTokenizer
 # from kobert.utils import get_tokenizer
 import kss
@@ -8,7 +9,7 @@ from eunjeon import Mecab
 
 
 def extract_nouns(news: str) -> dict:
-    return extract_nouns_v2(news)
+    return extract_nouns_v1(news)
 
 
 def extract_nouns_v1(news: str) -> dict:
@@ -17,26 +18,36 @@ def extract_nouns_v1(news: str) -> dict:
     :param news: contents of news.
     :return: dict(). Extracted keyword and its count. {keyword: count, }
     """
-    nouns = {}
+    nouns = []
 
     # Load tokenizer model
-    # tok_path = get_tokenizer()
-    # sp = SentencepieceTokenizer(tok_path)
     okt = Okt()
 
     news_lines = kss.split_sentences(news)
 
     for line in news_lines:
-        # tokens = sp(line)
-        tokens = okt.nouns(line)
+        nn = False
+        pos = 0
 
-        for token in tokens:
-            if token in nouns:
-                nouns[token] += 1
+        for token in okt.pos(line):
+            pos = pos + line[pos:].find(token[0])
+
+            if token[1] == 'Noun':
+                if nn:
+                    if line[pos-1] == ' ':
+                        nouns.append(f'{nouns[-1]} {token[0]}')
+                        nouns.append(token[0])
+                    else:
+                        nouns[-1] = f'{nouns[-1]}{token[0]}'
+                else:
+                    nouns.append(token[0])
+                nn = True
             else:
-                nouns[token] = 1
+                nn = False
 
-    return nouns
+            pos += len(token[0])
+
+    return dict(Counter(nouns))
 
 
 def extract_nouns_v2(news: str) -> dict:
@@ -45,26 +56,58 @@ def extract_nouns_v2(news: str) -> dict:
     :param news: contents of news.
     :return: dict(). Extracted keyword and its count. {keyword: count, }
     """
-    nouns = {}
-
     mecab = Mecab()
 
     news_lines = kss.split_sentences(news)
 
+    nouns = []
+
     for line in news_lines:
-        for st in line.split(" "):
-            count = 0
+        nn = 0
+        pos = 0
 
-            for token in mecab.nouns(st):
-                nouns[token] = nouns.get(token, 0) + 1
+        for token in mecab.pos(line):
+            pos = pos + line[pos:].find(token[0])
 
-    return nouns
+            if token[1] == 'NNG':
+                # 일반 명사
+                if nn > 0:
+                    if line[pos-1] == ' ':
+                        nouns.append((f'{nouns[-1][0]} {token[0]}', nouns[-1][1]))
+                        nouns.append(token[0])
+                    else:
+                        nouns[-1] = (f'{nouns[-1][0]}{token[0]}', nouns[-1][1])
+
+                    nn += 1
+                else:
+                    nn = 1
+                    nouns.append(token)
+
+            elif token[1] == 'NNP':
+                # 고유 명사
+                if nn > 0:
+                    if line[pos-1] == ' ':
+                        nouns.append((f'{nouns[-1][0]} {token[0]}', 'NNP'))
+                        nouns.append(token[0])
+                    else:
+                        nouns[-1] = (f'{nouns[-1][0]}{token[0]}', 'NNP')
+
+                    nn += 2
+                else:
+                    nn = 2
+                    nouns.append(token)
+            else:
+                nn = 0
+
+            pos += len(token[0])
+
+    return dict(Counter(nouns))
 
 
 def extract_keywords(group_nouns_list: list) -> list:
     """Extract keywords from the list of nouns from news groups.
 
-    :param nouns_list: list of results of extract_nouns(). [{keyword: count, },]
+    :param group_nouns_list: list of results of extract_nouns(). [{keyword: count, },]
     :return: list of extracted keywords. [str, ]
     """
     # Merge nouns list
@@ -113,12 +156,6 @@ def classify_news(newslist: list) -> (list, list):
     :param newslist: list of news. [{title, desc, url}, ]
     :return: group information. each group list has sets of news index and score. [[(index, score), ], ]
     """
-
-    # Load tokenizer model
-    # tok_path = get_tokenizer()
-    # sp = SentencepieceTokenizer(tok_path)
-    okt = Okt()
-
     # Vectorize news
     _vectorized_newslist = []
 
@@ -126,16 +163,6 @@ def classify_news(newslist: list) -> (list, list):
     nouns_list = []
 
     for news in newslist:
-        # title_embeddings = [0 for _ in range(len(token_list))]
-        # title_tokens = sp(news['title'])
-        #
-        # for token in title_tokens:
-        #     if token in token_list:
-        #         title_embeddings[token_list[token]] += 1
-        #     else:
-        #         token_list[token] = len(token_list)
-        #         title_embeddings.append(1)
-
         desc = news['desc'].replace("<b>", "").replace("</b>", "")
         nouns = extract_nouns(desc)
 
@@ -150,11 +177,6 @@ def classify_news(newslist: list) -> (list, list):
         # title_embeddings = np.array(title_embeddings) / np.sum(title_embeddings)
         desc_embeddings = np.array(desc_embeddings) / np.sum(desc_embeddings)
 
-        # embeddings = desc_embeddings/2
-        # for i in range(len(title_embeddings)):
-        #     embeddings[i] += title_embeddings[i]/2
-
-        # _vectorized_newslist.append(embeddings)
         _vectorized_newslist.append(desc_embeddings)
 
         nouns_list.append(nouns)
