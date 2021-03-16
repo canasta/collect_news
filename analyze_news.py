@@ -1,7 +1,5 @@
 import numpy as np
 from collections import Counter
-# from gluonnlp.data import SentencepieceTokenizer
-# from kobert.utils import get_tokenizer
 import kss
 from konlpy.tag import Okt
 
@@ -181,7 +179,7 @@ def classify_news(newslist: list) -> (list, list):
 
         nouns_list.append(nouns)
 
-    # Grouping news by cosine similarity using vertor
+    # Grouping news by cosine similarity using vector
     max_len = len(token_list)
     vectorized_newslist = [np.pad(x, (0, max_len-len(x)), mode='constant') for x in _vectorized_newslist]
 

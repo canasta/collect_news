@@ -3,10 +3,11 @@
 from collect_news import collect_naver
 from analyze_news import extract_keywords, classify_news
 from line_notify import send_line
+
 import configure
+from vector_info import VectorInfo
 
 from PyInquirer import prompt
-import json
 
 
 def search_news():
@@ -16,7 +17,7 @@ def search_news():
 
     for search_str in search_strings:
         # Collect news from NAVER news.
-        news_info = collect_naver(search_str, int)
+        news_info = collect_naver(search_str, 1000)
 
         # Classify news on topic
         # TODO: 1) load (selected/banned) news vectors, 2) classify the news, 3) add new group to result
@@ -40,6 +41,7 @@ def add_monitor():
         'message': '[] Right?',
         'default': True
     }]
+    new_keyword = ''
     while wait_input:
         new_keyword = input('Write new keyword to search: ')
         question[0]['message'] = f'[{new_keyword}] Right?'
@@ -47,7 +49,7 @@ def add_monitor():
         wait_input = not chk_input['chk_input']
 
     # Collect news from NAVER news.
-    news_info = collect_naver(new_keyword, int)
+    news_info = collect_naver(new_keyword, 1000)
 
     # Classify news
     group_info, nouns_info = classify_news(news_info)
@@ -72,17 +74,16 @@ def add_monitor():
 
     # Extract related words from selected news groups.
     selected_nouns_info = []
-    vectors = {'selected': [], 'banned': []}
 
     for i in range(len(group_info)):
         if i in selected_groups['group']:
             selected_nouns_info.extend(nouns_info[i])
 
-            vectors['selected'].extend(nouns_info[i])
+            VectorInfo.append(nouns_info[i], 'selected')
         else:
-            vectors['banned'].extend(nouns_info[i])
+            VectorInfo.append(nouns_info[i], 'banned')
 
-    save_nouns_vector(vectors)
+    VectorInfo.save()
 
     selected_keywords = extract_keywords(selected_nouns_info)
     selected_keywords = list(set(selected_keywords))
@@ -148,59 +149,9 @@ def show_monitors():
     input('Press ENTER to return.')
 
 
-def save_nouns_vector(vectors: dict):
-    nouns_dict = dict()
-
-    new_vec = dict()
-    for grp in ['selected', 'banned']:
-        new_grp = []
-        for news in vectors[grp]:
-            new_news = dict()
-            for k, v in news.items():
-                if k in nouns_dict:
-                    index = nouns_dict[k]
-                else:
-                    index = len(nouns_dict)
-                    nouns_dict[k] = index
-                new_news[index] = v
-            new_grp.append(new_news)
-        new_vec[grp] = new_grp
-
-    with open(configure.nouns_dict_filename, 'w+') as f:
-        # Save news vectors
-        json.dump(nouns_dict, f)
-
-    with open(configure.news_vector_filename, 'w+') as f:
-        # Save news vectors
-        json.dump(new_vec, f)
-
-
-def load_nouns_vector() -> (dict, list):
-    nouns_dict = []
-
-    with open(configure.nouns_dict_filename, 'r') as f:
-        json_dict = json.load(f)
-
-        for k, v in nouns_dict.items():
-            nouns_dict.append(k)
-
-    vectors = dict()
-    with open(configure.news_vector_filename, 'r') as f:
-        json_dict = json.load(f)
-
-        for grp in ['selected', 'banned']:
-            new_grp = []
-            for news in json_dict[grp]:
-                new_news = dict()
-                for k, v in news.items():
-                    new_news[nouns_dict[k]] = v
-                new_grp.append(new_news)
-            vectors[grp] = new_grp
-
-    return vectors, nouns_dict
-
-
 def main():
+    VectorInfo.load()
+
     questions = [
         {
             'type': 'list',
@@ -244,19 +195,5 @@ def main():
             break
 
 
-from analyze_news import extract_nouns
-
-
-def test():
-    teststr = (
-        '특히 디지털 런웨이 영상 기획부터 디자이너가 적극 참여해 시즌 컨셉에 맞는 연출을 이끌었으며, 음악, 예술 분야 아티스트와의 협력으로 화제성은 물론 대중성까지 더했다.'
-        '▲얼킨은 ‘투모로우바이투게더(TOMORROW X TOGETHER, 빅히트 엔터테인먼트 소속)’ 멤버 연준과 뮤지션 ‘비비(BIBI, 필굿뮤직 소속)’가 런웨이 모델로 등장하며, ▲자렛은 중국 그룹 ‘웨이션브이(WayV, SM엔터테인먼트 소속)’멤버 양양과 협업하는 등 K-팝과 K-패션의 결합을 통해 참가 브랜드의 매력 알리기에 나선다. 또한, ▲분더캄머는 국내 굴지의 프로덕션 ‘매스메스에이지’와 협업으로 한 편의 영화를 보는 듯한 런웨이 영상을 보여줄 예정이다.'
-    )
-    res = extract_nouns(teststr)
-
-    print(res)
-
-
 if __name__ == '__main__':
     main()
-    # test()

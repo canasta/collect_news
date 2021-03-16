@@ -5,15 +5,15 @@ from time import sleep
 import configure
 
 
-def collect_naver(keyword: str, lastcheck: int=None) -> list:
-    return collect_naver_v2(keyword, lastcheck)
+def collect_naver(keyword: str, last: int = None) -> [dict]:
+    return collect_naver_v2(keyword, last)
 
 
-def collect_naver_v2(keyword: str, lastcheck: int=None) -> list:
-    """NAVER 뉴스에서 keyword로 기사를 검색하고 결과를 리턴함.
+def collect_naver_v2(keyword: str, last: int = None) -> [dict]:
+    """NAVER 뉴스에서 keyword 로 기사를 검색하고 결과를 리턴함.
 
     :param keyword: 검색 키워드
-    :param lastcheck: 마지막 확인한 시간
+    :param last: 마지막 확인한 시간
     :return: 기사 정보 list. [{title, desc, url},]
     """
     collect_result = []
@@ -27,11 +27,11 @@ def collect_naver_v2(keyword: str, lastcheck: int=None) -> list:
     }
     for start_num in range(10):
         if start_num > 0:
-            requrl = search_url + search_option + str(start_num*100+1)
+            req_url = search_url + search_option + str(start_num*100+1)
         else:
-            requrl = search_url
+            req_url = search_url
 
-        res = requests.get(requrl, headers=request_header)
+        res = requests.get(req_url, headers=request_header)
         if res.status_code != 200:
             return
 
@@ -53,11 +53,11 @@ def collect_naver_v2(keyword: str, lastcheck: int=None) -> list:
     return collect_result
 
 
-def collect_naver_v1(keyword: str, lastcheck: int=None) -> list:
-    """NAVER 뉴스에서 keyword로 기사를 검색하고 결과를 리턴함.
+def collect_naver_v1(keyword: str, last: int = None) -> list:
+    """NAVER 뉴스에서 keyword 로 기사를 검색하고 결과를 리턴함.
 
     :param keyword: 검색 키워드
-    :param lastcheck: 마지막 확인한 시간
+    :param last: 마지막 확인한 시간
     :return: 기사 정보 list. [{title, desc, url},]
     """
     collect_result = []
@@ -89,7 +89,7 @@ def collect_naver_v1(keyword: str, lastcheck: int=None) -> list:
 
 
 def collect_google(keyword: str) -> list:
-    """*작성중*Google 뉴스로부터 정보 수집.
+    """*작성중* Google 뉴스로부터 정보 수집.
 
     :param keyword:
     :return:

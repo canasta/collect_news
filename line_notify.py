@@ -3,7 +3,7 @@ import configure
 
 
 def send_line(msg: str) -> bool:
-    """LINE notify를 사용한 LINE 메세지 전송.
+    """LINE notify 를 사용한 LINE 메세지 전송.
     https://notify-bot.line.me/en/
     https://github.com/continu2720/granblue_ramge_bot/blob/master/bot_ramge.py
 
@@ -16,7 +16,7 @@ def send_line(msg: str) -> bool:
     print(msg)
     return True
 
-    # TODO: LINE Bot SDK로 전환. https://github.com/line/line-bot-sdk-python
+    # TODO: LINE Bot SDK 로 전환. https://github.com/line/line-bot-sdk-python
 
     try:
         TARGET_URL = 'https://notify-api.line.me/api/notify'
@@ -32,4 +32,3 @@ def send_line(msg: str) -> bool:
         print(ex)
 
     return res
-
