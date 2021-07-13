@@ -6,15 +6,21 @@ import configure
 
 
 def collect_naver(keyword: str, last: int = None) -> [dict]:
+    """Collecting news articles by keyword from NAVER News and returns the list of articles.
+
+    :param keyword: str. Search string for searching news from NAVER News.
+    :param last: timestamp. Last time collected.(NOT USED CURRENTLY)
+    :return: list. List of collected news. [{title, desc, url},]
+    """
     return collect_naver_v2(keyword, last)
 
 
 def collect_naver_v2(keyword: str, last: int = None) -> [dict]:
-    """NAVER 뉴스에서 keyword 로 기사를 검색하고 결과를 리턴함.
+    """Collecting news articles by keyword from NAVER News and returns the list of articles.
 
-    :param keyword: 검색 키워드
-    :param last: 마지막 확인한 시간
-    :return: 기사 정보 list. [{title, desc, url},]
+    :param keyword: str. Search string for searching news from NAVER News.
+    :param last: timestamp. Last time collected.(NOT USED CURRENTLY)
+    :return: list. List of collected news. [{title, desc, url},]
     """
     collect_result = []
 
@@ -54,11 +60,11 @@ def collect_naver_v2(keyword: str, last: int = None) -> [dict]:
 
 
 def collect_naver_v1(keyword: str, last: int = None) -> list:
-    """NAVER 뉴스에서 keyword 로 기사를 검색하고 결과를 리턴함.
+    """Collecting news articles by keyword from NAVER News and returns the list of articles.
 
-    :param keyword: 검색 키워드
-    :param last: 마지막 확인한 시간
-    :return: 기사 정보 list. [{title, desc, url},]
+    :param keyword: str. Search string for searching news from NAVER News.
+    :param last: timestamp. Last time collected.(NOT USED CURRENTLY)
+    :return: list. List of collected news. [{title, desc, url},]
     """
     collect_result = []
 

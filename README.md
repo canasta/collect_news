@@ -1,27 +1,40 @@
 # Collect_News
-Collecting and grouping news with keyword.
+Collecting and grouping news with keywords.
 
-# Environment
-* Python 3.8
-* requests 2.25.1
-* bs4 0.0.1
+---
+## 플랫폼
+PC/서버에서 기사 수집 및 메세지 발송.
 
-# 기능
-	- 뉴스 기사 크롤링
-        네이버, 구글
-    - 키워드 상세화
-        입력받은 키워드를 의도에 맞는 형태로 상세화
-            입력 키워드로 기사 목록 추출(관련도순?)
-            목록에서 관련 기사 선택
-            선택된 기사에서 상위 등장 키워드 추출
-	- 동일 내용에 대한 중복 기사 그루핑
-        Classification?
-        n-gram 유사도
-	- 결과 표출
-        LINE notify 이용해서 신규 기사 발생 시 알림
-    - 전체 수집된 목록 확인을 위한 페이지/문서 생성
+---
+## 기능
+### 뉴스 기사 크롤링
+NAVER 뉴스로부터 NAVER Open API를 이용한 기사 수집 구현.
+  
+### 키워드 상세화
+수집하려는 대상 기사에 맞는 형태로 키워드 상세화.
+* 키워드를 이용해 수집한 기사에서 제외할 기사 선택
+* 선택/제외 정보를 이용한 관련/제외 키워드 추가
+* 키워드 갱신 여부 확인
 
-# 플랫폼
-	서버 + 라인 노티파이
-	https://notify-bot.line.me/en/
-	https://github.com/continu2720/granblue_ramge_bot/blob/master/bot_ramge.py
+### 동일 내용에 대한 중복 기사 그루핑
+n-gram cosine similarity를 이용한 Clustering 수행.
+
+### 결과 표출
+검색 결과 조회 및 신규 기사 그룹 발생 시 메세지 알림.
+
+1. 조회 페이지 생성
+2. Mail 발송
+3. [LINE Notify](https://notify-bot.line.me/en/)
+[https://github.com/continu2720/granblue_ramge_bot/blob/master/bot_ramge.py](https://github.com/continu2720/granblue_ramge_bot/blob/master/bot_ramge.py)
+
+---
+
+##TODO
+1. Classify news on topic (main.py:search_news())
+    1) load (selected/banned) news vectors
+    2) classify the news
+    3) add new group to result
+2. CLI->GUI
+3. Messaging
+    * 웹페이지 생성 후 Mail 발송 
+    * LINE Bot SDK 로 전환. https://github.com/line/line-bot-sdk-python

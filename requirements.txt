@@ -1,0 +1,14 @@
+requests>=2.25.1
+gluonnlp>=0.10.0
+mxnet>=1.7.0.post2
+torch>=1.8.0
+transformers>=3.5.1
+setuptools>=53.0.0
+kobert>=0.1.2
+PyInquirer>=1.0.3
+numpy>=1.19.5
+kss>=2.5.0
+konlpy>=0.5.2
+eunjeon>=0.4.0
+bs4>=0.0.1
+beautifulsoup4>=4.6.0
